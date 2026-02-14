@@ -105,7 +105,7 @@ def process_document_task(self, version_id: int):
         raise self.retry(exc=exc)
 
 
-def extract_and_chunk_task(version_id: int) -> List[Dict]:
+def extract_and_chunk_task(version_id: int) -> list[dict]:
     """
     Extract text and create chunks.
     
@@ -141,7 +141,7 @@ def extract_and_chunk_task(version_id: int) -> List[Dict]:
     return chunks
 
 
-def generate_embeddings_task(chunks_data: List[Dict]) -> List[Dict]:
+def generate_embeddings_task(chunks_data: list[dict]) -> list[dict]:
     """
     Generate embeddings for chunks.
     
@@ -171,7 +171,7 @@ def generate_embeddings_task(chunks_data: List[Dict]) -> List[Dict]:
     return chunks_data
 
 
-def save_chunks_to_db(version_id: int, chunks_data: List[Dict]):
+def save_chunks_to_db(version_id: int, chunks_data: list[dict]):
     """
     Save processed chunks to database.
     

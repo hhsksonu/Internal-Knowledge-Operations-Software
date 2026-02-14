@@ -10,18 +10,17 @@ pgvector==0.4.2
 # Async Processing
 celery==5.3.6
 redis==5.0.1
-django-celery-beat==2.5.0  # For periodic tasks
-django-celery-results==2.5.1  # Store task results in DB
-
+django-celery-beat==2.5.0  
+django-celery-results==2.5.1 
 # Document Processing
 PyPDF2==3.0.1
 python-docx==1.1.0
-python-magic==0.4.27  # File type detection
+python-magic==0.4.27  
 
 # Text Processing & ML
-sentence-transformers==2.3.1  # For embeddings
-faiss-cpu==1.13.2  # Alternative vector store
-nltk==3.8.1  # Text processing utilities
+sentence-transformers==2.3.1 
+faiss-cpu==1.13.2  
+nltk==3.8.1 
 
 # Environment & Configuration
 python-decouple==3.8
