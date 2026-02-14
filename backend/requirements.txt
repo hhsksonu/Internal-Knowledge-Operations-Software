@@ -1,0 +1,42 @@
+# Core Django
+Django==4.2.9
+djangorestframework==3.14.0
+djangorestframework-simplejwt==5.3.1
+
+# Database
+psycopg2-binary==2.9.9
+pgvector==0.4.2
+
+# Async Processing
+celery==5.3.6
+redis==5.0.1
+django-celery-beat==2.5.0  # For periodic tasks
+django-celery-results==2.5.1  # Store task results in DB
+
+# Document Processing
+PyPDF2==3.0.1
+python-docx==1.1.0
+python-magic==0.4.27  # File type detection
+
+# Text Processing & ML
+sentence-transformers==2.3.1  # For embeddings
+faiss-cpu==1.13.2  # Alternative vector store
+nltk==3.8.1  # Text processing utilities
+
+# Environment & Configuration
+python-decouple==3.8
+python-dotenv==1.0.0
+
+# API & Utilities
+requests==2.31.0
+Pillow==10.2.0
+
+# Development & Testing
+pytest==7.4.4
+pytest-django==4.7.0
+factory-boy==3.3.0
+faker==22.0.0
+
+# Monitoring & Logging
+django-cors-headers==4.3.1
+gunicorn==21.2.0
