@@ -17,7 +17,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     # Admin panel
-    path('admin/', admin.site.admin_view),
+    path('admin/', admin.site.urls),
     
     # API endpoints
     path('api/auth/', include('apps.core.urls')),

@@ -76,7 +76,8 @@ class DocumentUploadView(views.APIView):
                     'version': version.version_number,
                     'file_type': version.file_type,
                     'file_size': version.file_size
-                }
+                },
+                request=request
             )
             
             return Response({

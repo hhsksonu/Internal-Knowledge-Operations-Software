@@ -144,7 +144,8 @@ class QueryView(views.APIView):
                     'num_sources': len(sources),
                     'tokens_used': tokens_used,
                     'response_time_ms': response_time_ms
-                }
+                },
+                request=request
             )
             
             # Step 8: Return response

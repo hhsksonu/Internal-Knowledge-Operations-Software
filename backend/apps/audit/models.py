@@ -68,13 +68,16 @@ class AuditLog(models.Model):
     
     # Where it came from
     ip_address = models.GenericIPAddressField(
-        null=True,
-        blank=True,
+        null=True,  # ← Already there
+        blank=True,  # ← Already there
+        default='0.0.0.0',  # ← ADD THIS
         help_text="IP address of the request"
     )
-    
+
     user_agent = models.TextField(
-        blank=True,
+        null=True,  # ← ADD THIS
+        blank=True,  # ← Already there
+        default='unknown',  # ← ADD THIS
         help_text="Browser/client user agent"
     )
     
