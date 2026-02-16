@@ -1,25 +1,11 @@
-"""
-Django settings for Knowledge Platform.
-
-This configuration is designed for production readiness with:
-- Environment-based configuration
-- Security best practices
-- PostgreSQL with pgvector
-- Celery for async tasks
-- JWT authentication
-"""
-
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
 
-# Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-please-change-this-in-production')
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
@@ -81,7 +67,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
-# PostgreSQL with pgvector extension for vector similarity search
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -115,13 +100,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
+# International
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# Static files 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
@@ -129,10 +114,10 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Default primary key field type
+# Default primarykey
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# REST Framework Configuration
+# REST Framework Config
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -148,7 +133,7 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'apps.core.exceptions.custom_exception_handler',
 }
 
-# JWT Configuration
+# JWT
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=config('JWT_ACCESS_TOKEN_LIFETIME_MINUTES', default=60, cast=int)),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=config('JWT_REFRESH_TOKEN_LIFETIME_DAYS', default=7, cast=int)),
@@ -160,13 +145,13 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# CORS Configuration
+# CORS
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React dev server
     "http://localhost:8000",  # Django dev server
 ]
 
-# Celery Configuration
+# Celery 
 CELERY_BROKER_URL = config('REDIS_URL', default='redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = 'django-db'  # Store results in PostgreSQL
 CELERY_CACHE_BACKEND = 'default'
@@ -177,7 +162,7 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes max per task
 
-# Cache Configuration (using Redis)
+# Cache Config  Redis
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
@@ -185,7 +170,7 @@ CACHES = {
     }
 }
 
-# LLM Service Configuration
+# LLM  
 LLM_CONFIG = {
     'PROVIDER': config('LLM_PROVIDER', default='openai'),
     'API_KEY': config('LLM_API_KEY', default=''),
@@ -202,19 +187,19 @@ DOCUMENT_CONFIG = {
     'CHUNK_OVERLAP': config('CHUNK_OVERLAP', default=50, cast=int),
 }
 
-# Vector Search Configuration
+# Vector Search 
 VECTOR_SEARCH_CONFIG = {
     'TOP_K_RESULTS': config('TOP_K_RESULTS', default=5, cast=int),
     'SIMILARITY_THRESHOLD': config('SIMILARITY_THRESHOLD', default=0.7, cast=float),
 }
 
-# Rate Limiting Configuration
+# Rate Limiting
 RATE_LIMIT_CONFIG = {
     'MAX_QUERIES_PER_DAY': config('MAX_QUERIES_PER_DAY', default=100, cast=int),
     'MAX_TOKENS_PER_QUERY': config('MAX_TOKENS_PER_QUERY', default=2000, cast=int),
 }
 
-# Logging Configuration
+# Logging 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
