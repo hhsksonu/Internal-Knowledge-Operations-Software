@@ -1,19 +1,10 @@
-"""
-Serializers for Document Management.
-"""
-
 from rest_framework import serializers
 from django.conf import settings
 from .models import Document, DocumentVersion, DocumentChunk, DocumentStatus
 
 
 class DocumentChunkSerializer(serializers.ModelSerializer):
-    """
-    Serializer for DocumentChunk.
-    
-    Used primarily for displaying search results with source attribution.
-    """
-    
+
     document_title = serializers.CharField(source='document.title', read_only=True)
     version_number = serializers.IntegerField(source='version.version_number', read_only=True)
     
@@ -23,16 +14,9 @@ class DocumentChunkSerializer(serializers.ModelSerializer):
             'id', 'chunk_index', 'text', 'metadata',
             'document_title', 'version_number'
         ]
-        # Don't expose embeddings in API responses (too large)
-
 
 class DocumentVersionSerializer(serializers.ModelSerializer):
-    """
-    Serializer for DocumentVersion.
-    
-    Displays version information including processing status.
-    """
-    
+
     file_url = serializers.SerializerMethodField()
     
     class Meta:
@@ -56,12 +40,7 @@ class DocumentVersionSerializer(serializers.ModelSerializer):
 
 
 class DocumentSerializer(serializers.ModelSerializer):
-    """
-    Serializer for Document (list view).
-    
-    Shows basic document information without all versions.
-    """
-    
+
     owner_username = serializers.CharField(source='owner.username', read_only=True)
     owner_name = serializers.SerializerMethodField()
     approved_by_username = serializers.CharField(
@@ -124,11 +103,6 @@ class DocumentDetailSerializer(serializers.ModelSerializer):
 
 
 class DocumentUploadSerializer(serializers.Serializer):
-    """
-    Serializer for document upload.
-    
-    Handles file upload and creates Document + DocumentVersion.
-    """
     
     title = serializers.CharField(max_length=255)
     description = serializers.CharField(required=False, allow_blank=True)
@@ -200,18 +174,11 @@ class DocumentUploadSerializer(serializers.Serializer):
 
 
 class DocumentApprovalSerializer(serializers.Serializer):
-    """
-    Serializer for document approval.
-    
-    Content owners can approve documents to make them searchable.
-    """
-    
+
     action = serializers.ChoiceField(choices=['approve', 'archive'])
     
     def validate(self, attrs):
-        """
-        Validate that document can be approved.
-        """
+
         document = self.context['document']
         
         if attrs['action'] == 'approve':

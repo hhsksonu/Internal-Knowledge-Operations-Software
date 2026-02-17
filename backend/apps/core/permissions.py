@@ -1,19 +1,8 @@
-"""
-Custom Permission Classes for Role-Based Access Control.
-
-These permissions are used in views to restrict access based on user roles.
-"""
-
 from rest_framework import permissions
 from .models import UserRole
 
 
 class IsAdmin(permissions.BasePermission):
-    """
-    Permission check: User must be an admin.
-    
-    Used for: User management, system configuration
-    """
     
     def has_permission(self, request, view):
         return (
@@ -24,11 +13,6 @@ class IsAdmin(permissions.BasePermission):
 
 
 class IsContentOwner(permissions.BasePermission):
-    """
-    Permission check: User must be admin or content owner.
-    
-    Used for: Document approval, document deletion
-    """
     
     def has_permission(self, request, view):
         return (
@@ -39,11 +23,6 @@ class IsContentOwner(permissions.BasePermission):
 
 
 class IsReviewer(permissions.BasePermission):
-    """
-    Permission check: User must be admin or reviewer.
-    
-    Used for: Reviewing feedback, managing quality
-    """
     
     def has_permission(self, request, view):
         return (
@@ -54,11 +33,6 @@ class IsReviewer(permissions.BasePermission):
 
 
 class CanQuery(permissions.BasePermission):
-    """
-    Permission check: User has remaining query quota.
-    
-    Used for: RAG queries
-    """
     
     message = "Daily query limit exceeded. Please try again tomorrow."
     
@@ -66,7 +40,7 @@ class CanQuery(permissions.BasePermission):
         if not request.user or not request.user.is_authenticated:
             return False
         
-        # Admins bypass quota
+        # Admins bypass
         if request.user.role == UserRole.ADMIN:
             return True
         
@@ -74,18 +48,13 @@ class CanQuery(permissions.BasePermission):
 
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
-    """
-    Object-level permission: Allow owners to edit, others to read.
-    
-    Used for: Document access control
-    """
     
     def has_object_permission(self, request, view, obj):
-        # Read permissions are allowed for authenticated users
+        # read permissions for authenticated users
         if request.method in permissions.SAFE_METHODS:
             return True
         
-        # Write permissions only for owner or admins
+        #write permissions only for owner or admins
         if hasattr(obj, 'owner'):
             return obj.owner == request.user or request.user.is_admin()
         

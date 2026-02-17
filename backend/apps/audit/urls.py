@@ -1,7 +1,3 @@
-"""
-URL Configuration for Audit Logs.
-"""
-
 from django.urls import path
 from .views import AuditLogListView
 

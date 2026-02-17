@@ -1,15 +1,3 @@
-"""
-Authentication Views for User Management.
-
-Endpoints:
-- POST /api/auth/register/ - Create new user
-- POST /api/auth/login/ - Get JWT tokens
-- POST /api/auth/refresh/ - Refresh access token
-- GET /api/auth/profile/ - Get current user profile
-- PUT /api/auth/profile/ - Update profile
-- POST /api/auth/change-password/ - Change password
-"""
-
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -27,25 +15,6 @@ from .permissions import IsAdmin
 
 
 class RegisterView(generics.CreateAPIView):
-    """
-    User Registration Endpoint.
-    
-    POST /api/auth/register/
-    
-    Request body:
-    {
-        "username": "john_doe",
-        "email": "john@example.com",
-        "password": "SecurePass123!",
-        "password_confirm": "SecurePass123!",
-        "first_name": "John",
-        "last_name": "Doe",
-        "role": "EMPLOYEE"  # Optional, defaults to EMPLOYEE
-    }
-    
-    Response: User object with JWT tokens
-    """
-    
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
     permission_classes = [permissions.AllowAny]  # Allow anyone to register
@@ -55,7 +24,7 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         
-        # Generate JWT tokens for the new user
+        #JWT tokens for the new user
         from rest_framework_simplejwt.tokens import RefreshToken
         refresh = RefreshToken.for_user(user)
         
@@ -70,20 +39,11 @@ class RegisterView(generics.CreateAPIView):
 
 
 class ProfileView(generics.RetrieveUpdateAPIView):
-    """
-    User Profile Endpoint.
-    
-    GET /api/auth/profile/ - Get current user's profile
-    PUT /api/auth/profile/ - Update current user's profile
-    
-    Requires authentication.
-    """
-    
     serializer_class = UserUpdateSerializer
     permission_classes = [permissions.IsAuthenticated]
     
     def get_object(self):
-        # Return the current logged-in user
+        # Return for the current logged-in user
         return self.request.user
     
     def get_serializer_class(self):
@@ -93,19 +53,6 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
 
 class ChangePasswordView(APIView):
-    """
-    Change Password Endpoint.
-    
-    POST /api/auth/change-password/
-    
-    Request body:
-    {
-        "old_password": "OldPass123!",
-        "new_password": "NewPass123!",
-        "new_password_confirm": "NewPass123!"
-    }
-    """
-    
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
@@ -119,7 +66,6 @@ class ChangePasswordView(APIView):
             request.user.set_password(serializer.validated_data['new_password'])
             request.user.save()
             
-            # Update session to prevent logout
             update_session_auth_hash(request, request.user)
             
             return Response({
@@ -133,16 +79,6 @@ class ChangePasswordView(APIView):
 
 
 class UserListView(generics.ListAPIView):
-    """
-    List All Users (Admin Only).
-    
-    GET /api/auth/users/
-    
-    Query params:
-    - role: Filter by role
-    - search: Search by username or email
-    """
-    
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdmin]
@@ -150,12 +86,12 @@ class UserListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
         
-        # Filter by role if provided
+        # Filter by role
         role = self.request.query_params.get('role')
         if role:
             queryset = queryset.filter(role=role)
         
-        # Search by username or email
+        # Search username or email
         search = self.request.query_params.get('search')
         if search:
             queryset = queryset.filter(
@@ -167,22 +103,13 @@ class UserListView(generics.ListAPIView):
 
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    User Detail Endpoint (Admin Only).
-    
-    GET /api/auth/users/<id>/ - Get user details
-    PUT /api/auth/users/<id>/ - Update user
-    DELETE /api/auth/users/<id>/ - Deactivate user
-    """
     
     queryset = User.objects.all()
     serializer_class = UserUpdateSerializer
     permission_classes = [IsAdmin]
     
     def delete(self, request, *args, **kwargs):
-        """
-        Soft delete: Deactivate user instead of deleting.
-        """
+
         user = self.get_object()
         user.is_active = False
         user.save()

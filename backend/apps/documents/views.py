@@ -1,16 +1,3 @@
-"""
-Document Management Views.
-
-Endpoints:
-- POST /api/documents/upload/ - Upload new document
-- GET /api/documents/ - List documents
-- GET /api/documents/<id>/ - Get document details
-- PUT /api/documents/<id>/ - Update document
-- DELETE /api/documents/<id>/ - Delete document
-- POST /api/documents/<id>/approve/ - Approve/archive document
-- POST /api/documents/<id>/new-version/ - Upload new version
-"""
-
 from rest_framework import status, generics, views
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -31,23 +18,6 @@ from apps.audit.services import AuditService
 
 
 class DocumentUploadView(views.APIView):
-    """
-    Upload a new document.
-    
-    POST /api/documents/upload/
-    
-    Accepts multipart/form-data with:
-    - file: Document file (required)
-    - title: Document title (required)
-    - description: Description (optional)
-    - tags: JSON array of tags (optional)
-    - department: Department name (optional)
-    
-    Response:
-    - 201: Document created, processing started
-    - 400: Validation error
-    """
-    
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
@@ -57,15 +27,15 @@ class DocumentUploadView(views.APIView):
         )
         
         if serializer.is_valid():
-            # Create document and version
+            #document and version
             result = serializer.save()
             document = result['document']
             version = result['version']
             
-            # Trigger async processing
+            #async processing
             process_document_task.delay(version.id)
             
-            # Log action
+            # Log
             AuditService.log_action(
                 user=request.user,
                 action='DOCUMENT_UPLOAD',
@@ -95,24 +65,7 @@ class DocumentUploadView(views.APIView):
 
 
 class DocumentListView(generics.ListAPIView):
-    """
-    List documents with filtering.
-    
-    GET /api/documents/
-    
-    Query params:
-    - status: Filter by status (DRAFT, APPROVED, ARCHIVED)
-    - owner: Filter by owner username
-    - department: Filter by department
-    - tags: Filter by tags (comma-separated)
-    - search: Search in title and description
-    
-    Returns only documents user has permission to see:
-    - Own documents
-    - Approved documents in their department
-    - All documents (if admin)
-    """
-    
+
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
     
@@ -122,33 +75,26 @@ class DocumentListView(generics.ListAPIView):
         
         # Permission filtering
         if not user.is_admin():
-            # Users can see:
-            # 1. Their own documents
-            # 2. Approved documents
+
             queryset = queryset.filter(
                 Q(owner=user) | Q(status=DocumentStatus.APPROVED)
             )
         
-        # Filter by status
         status_filter = self.request.query_params.get('status')
         if status_filter:
             queryset = queryset.filter(status=status_filter)
         
-        # Filter by owner
         owner = self.request.query_params.get('owner')
         if owner:
             queryset = queryset.filter(owner__username=owner)
         
-        # Filter by department
         department = self.request.query_params.get('department')
         if department:
             queryset = queryset.filter(department__iexact=department)
         
-        # Filter by tags
         tags = self.request.query_params.get('tags')
         if tags:
             tag_list = [t.strip() for t in tags.split(',')]
-            # Filter documents that have any of these tags
             for tag in tag_list:
                 queryset = queryset.filter(tags__contains=[tag])
         
@@ -164,26 +110,17 @@ class DocumentListView(generics.ListAPIView):
 
 
 class DocumentDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Get, update, or delete a document.
-    
-    GET /api/documents/<id>/ - Get details with all versions
-    PUT /api/documents/<id>/ - Update document metadata
-    DELETE /api/documents/<id>/ - Delete document
-    """
-    
+
     queryset = Document.objects.all()
     serializer_class = DocumentDetailSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
     
     def perform_destroy(self, instance):
-        """
-        Soft delete: Archive instead of deleting.
-        """
+
         instance.status = DocumentStatus.ARCHIVED
         instance.save()
         
-        # Log action
+        # Log 
         AuditService.log_action(
             user=self.request.user,
             action='DOCUMENT_DELETE',
@@ -194,19 +131,7 @@ class DocumentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class DocumentApprovalView(views.APIView):
-    """
-    Approve or archive a document.
-    
-    POST /api/documents/<pk>/approve/
-    
-    Request body:
-    {
-        "action": "approve"  // or "archive"
-    }
-    
-    Only content owners can approve documents.
-    """
-    
+
     permission_classes = [IsAuthenticated, IsContentOwner]
     
     def post(self, request, pk):
@@ -239,7 +164,6 @@ class DocumentApprovalView(views.APIView):
             
             document.save()
             
-            # Log action
             AuditService.log_action(
                 user=request.user,
                 action=audit_action,
@@ -260,15 +184,7 @@ class DocumentApprovalView(views.APIView):
 
 
 class DocumentNewVersionView(views.APIView):
-    """
-    Upload a new version of an existing document.
-    
-    POST /api/documents/<pk>/new-version/
-    
-    Accepts multipart/form-data with:
-    - file: New document file
-    """
-    
+
     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
     
     def post(self, request, pk):
@@ -295,10 +211,8 @@ class DocumentNewVersionView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Get next version number
         next_version = document.current_version + 1
         
-        # Create new version
         version = DocumentVersion.objects.create(
             document=document,
             version_number=next_version,
@@ -307,10 +221,9 @@ class DocumentNewVersionView(views.APIView):
             file_type=file.name.split('.')[-1].lower()
         )
         
-        # Trigger processing
+        # processing
         process_document_task.delay(version.id)
         
-        # Log action
         AuditService.log_action(
             user=request.user,
             action='DOCUMENT_VERSION_UPLOAD',
@@ -333,14 +246,7 @@ class DocumentNewVersionView(views.APIView):
 
 
 class DocumentProcessingStatusView(views.APIView):
-    """
-    Get processing status for a document version.
-    
-    GET /api/documents/versions/<id>/status/
-    
-    Useful for polling to check if document is ready.
-    """
-    
+
     permission_classes = [IsAuthenticated]
     
     def get(self, request, pk):

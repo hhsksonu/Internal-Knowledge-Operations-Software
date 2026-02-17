@@ -1,6 +1,3 @@
-"""
-URL Configuration for Analytics.
-"""
 
 from django.urls import path
 from .views import SystemStatsView, QueryAnalyticsView, UserAnalyticsView

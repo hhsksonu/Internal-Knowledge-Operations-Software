@@ -1,14 +1,3 @@
-"""
-Retrieval Views for RAG System.
-
-Endpoints:
-- POST /api/retrieval/query/ - Ask a question
-- GET /api/retrieval/queries/ - Get query history
-- GET /api/retrieval/queries/<id>/ - Get specific query
-- POST /api/retrieval/feedback/ - Submit feedback
-- GET /api/retrieval/feedback/ - Get feedback (reviewers only)
-"""
-
 import time
 import logging
 from rest_framework import status, generics, views
@@ -34,34 +23,6 @@ logger = logging.getLogger(__name__)
 
 
 class QueryView(views.APIView):
-    """
-    RAG Query Endpoint.
-    
-    POST /api/retrieval/query/
-    
-    Request:
-    {
-        "question": "What is our remote work policy?",
-        "department": "HR"  // optional
-    }
-    
-    Response:
-    {
-        "query_id": 123,
-        "question": "What is our remote work policy?",
-        "answer": "According to Source 1, our remote work policy...",
-        "sources": [
-            {
-                "chunk": {...},
-                "similarity_score": 0.89,
-                "rank": 1
-            }
-        ],
-        "tokens_used": 450,
-        "response_time_ms": 1200
-    }
-    """
-    
     permission_classes = [IsAuthenticated, CanQuery]
     
     @transaction.atomic
@@ -82,7 +43,7 @@ class QueryView(views.APIView):
         start_time = time.time()
         
         try:
-            # Step 1: Vector search for relevant chunks
+            # Vector search for chunks
             vector_search = VectorSearchService()
             search_results = vector_search.search(
                 query=question,
@@ -91,21 +52,21 @@ class QueryView(views.APIView):
             )
             
             if not search_results:
-                # No relevant documents found
+                # No documents found
                 return self._handle_no_results(request.user, question)
             
-            # Step 2: Generate answer using LLM
+            #generate answer using LLM
             llm_service = LLMService()
             answer, tokens_used = llm_service.generate_answer(
                 question=question,
                 context_chunks=search_results
             )
             
-            # Step 3: Calculate stats
+            #calculate stats
             response_time_ms = int((time.time() - start_time) * 1000)
             similarity_stats = vector_search.get_similarity_stats(search_results)
             
-            # Step 4: Save query to database
+            #save query 
             query = Query.objects.create(
                 user=request.user,
                 question=question,
@@ -118,7 +79,7 @@ class QueryView(views.APIView):
                 avg_similarity_score=similarity_stats['avg_score']
             )
             
-            # Step 5: Save source attributions
+            # save source 
             sources = []
             for rank, result in enumerate(search_results, 1):
                 source = QuerySource.objects.create(
@@ -129,11 +90,11 @@ class QueryView(views.APIView):
                 )
                 sources.append(source)
             
-            # Step 6: Update user's query count and token usage
+            # update user query
             request.user.increment_query_count()
             request.user.add_token_usage(tokens_used)
             
-            # Step 7: Log audit trail
+            # log audit
             AuditService.log_action(
                 user=request.user,
                 action='QUERY_EXECUTED',
@@ -148,7 +109,7 @@ class QueryView(views.APIView):
                 request=request
             )
             
-            # Step 8: Return response
+            # return response
             return Response({
                 'query_id': query.id,
                 'question': question,
@@ -185,11 +146,7 @@ class QueryView(views.APIView):
             )
     
     def _handle_no_results(self, user, question):
-        """
-        Handle case where no relevant documents found.
-        """
-        
-        # Still save the query for analytics
+        #query for analytics
         query = Query.objects.create(
             user=user,
             question=question,
@@ -213,9 +170,6 @@ class QueryView(views.APIView):
         }, status=status.HTTP_200_OK)
     
     def _format_context(self, search_results):
-        """
-        Format search results into context string for storage.
-        """
         context_parts = []
         for result in search_results:
             context_parts.append(
@@ -226,15 +180,6 @@ class QueryView(views.APIView):
 
 
 class QueryHistoryView(generics.ListAPIView):
-    """
-    Get user's query history.
-    
-    GET /api/retrieval/queries/
-    
-    Query params:
-    - limit: Number of results (default 20)
-    - search: Search in questions and answers
-    """
     
     serializer_class = QuerySerializer
     permission_classes = [IsAuthenticated]
@@ -255,38 +200,17 @@ class QueryHistoryView(generics.ListAPIView):
 
 
 class QueryDetailView(generics.RetrieveAPIView):
-    """
-    Get specific query details.
-    
-    GET /api/retrieval/queries/<id>/
-    """
-    
     serializer_class = QuerySerializer
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # Users can only see their own queries
-        # Admins can see all
+
         if self.request.user.is_admin():
             return Query.objects.all()
         return Query.objects.filter(user=self.request.user)
 
 
 class FeedbackCreateView(views.APIView):
-    """
-    Submit feedback on a query.
-    
-    POST /api/retrieval/feedback/
-    
-    Request:
-    {
-        "query_id": 123,
-        "feedback_type": "HELPFUL",
-        "rating": 5,
-        "comment": "Very helpful!"
-    }
-    """
-    
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
@@ -343,16 +267,6 @@ class FeedbackCreateView(views.APIView):
 
 
 class FeedbackListView(generics.ListAPIView):
-    """
-    List feedback (for reviewers).
-    
-    GET /api/retrieval/feedback/
-    
-    Query params:
-    - feedback_type: Filter by type
-    - is_reviewed: Filter by review status (true/false)
-    """
-    
     serializer_class = FeedbackSerializer
     permission_classes = [IsAuthenticated, IsReviewer]
     
@@ -374,12 +288,7 @@ class FeedbackListView(generics.ListAPIView):
 
 
 class FeedbackReviewView(views.APIView):
-    """
-    Mark feedback as reviewed.
-    
-    POST /api/retrieval/feedback/<id>/review/
-    """
-    
+
     permission_classes = [IsAuthenticated, IsReviewer]
     
     def post(self, request, pk):

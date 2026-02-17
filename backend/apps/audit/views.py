@@ -1,7 +1,3 @@
-"""
-Audit Log Views.
-"""
-
 from rest_framework import generics, serializers
 from rest_framework.permissions import IsAuthenticated
 from .models import AuditLog
@@ -9,9 +5,6 @@ from apps.core.permissions import IsAdmin
 
 
 class AuditLogSerializer(serializers.ModelSerializer):
-    """
-    Serializer for audit logs.
-    """
     
     user_username = serializers.CharField(source='user.username', read_only=True, allow_null=True)
     
@@ -24,16 +17,6 @@ class AuditLogSerializer(serializers.ModelSerializer):
 
 
 class AuditLogListView(generics.ListAPIView):
-    """
-    List audit logs (admin only).
-    
-    GET /api/audit/logs/
-    
-    Query params:
-    - action: Filter by action type
-    - user: Filter by username
-    - resource_type: Filter by resource type
-    """
     
     serializer_class = AuditLogSerializer
     permission_classes = [IsAuthenticated, IsAdmin]

@@ -1,13 +1,3 @@
-"""
-Analytics Views for System Metrics.
-
-Provides insights into system usage:
-- Query statistics
-- Document statistics
-- User activity
-- Cost tracking
-"""
-
 from rest_framework import views
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -22,28 +12,21 @@ from apps.core.permissions import IsAdmin
 
 
 class SystemStatsView(views.APIView):
-    """
-    Get overall system statistics.
-    
-    GET /api/analytics/stats/
-    
-    Returns counts and metrics for the entire system.
-    """
     
     permission_classes = [IsAuthenticated, IsAdmin]
     
     def get(self, request):
-        # Document stats
+        # document stats
         total_documents = Document.objects.count()
         approved_documents = Document.objects.filter(status=DocumentStatus.APPROVED).count()
         pending_documents = Document.objects.filter(status=DocumentStatus.DRAFT).count()
         
-        # Query stats
+        #query stats
         total_queries = Query.objects.count()
         successful_queries = Query.objects.filter(was_successful=True).count()
         failed_queries = Query.objects.filter(was_successful=False).count()
         
-        # Token usage
+        #token usage
         total_tokens = Query.objects.aggregate(Sum('tokens_used'))['tokens_used__sum'] or 0
         
         # User stats
@@ -81,14 +64,6 @@ class SystemStatsView(views.APIView):
 
 
 class QueryAnalyticsView(views.APIView):
-    """
-    Get query analytics.
-    
-    GET /api/analytics/queries/
-    
-    Query params:
-    - days: Number of days to analyze (default 30)
-    """
     
     permission_classes = [IsAuthenticated, IsAdmin]
     
@@ -98,11 +73,11 @@ class QueryAnalyticsView(views.APIView):
         
         queries = Query.objects.filter(created_at__gte=since)
         
-        # Overall stats
+        #overall stats
         total = queries.count()
         successful = queries.filter(was_successful=True).count()
         
-        # Average response time
+        #average response time
         avg_response_time = queries.aggregate(Avg('response_time_ms'))['response_time_ms__avg'] or 0
         
         # Average tokens per query
@@ -147,11 +122,6 @@ class QueryAnalyticsView(views.APIView):
 
 
 class UserAnalyticsView(views.APIView):
-    """
-    Get current user's analytics.
-    
-    GET /api/analytics/me/
-    """
     
     permission_classes = [IsAuthenticated]
     

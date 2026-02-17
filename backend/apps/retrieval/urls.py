@@ -1,7 +1,3 @@
-"""
-URL Configuration for Retrieval/RAG.
-"""
-
 from django.urls import path
 from .views import (
     QueryView,
@@ -15,12 +11,10 @@ from .views import (
 app_name = 'retrieval'
 
 urlpatterns = [
-    # Query endpoints
     path('query/', QueryView.as_view(), name='query'),
     path('queries/', QueryHistoryView.as_view(), name='query-history'),
     path('queries/<int:pk>/', QueryDetailView.as_view(), name='query-detail'),
     
-    # Feedback endpoints
     path('feedback/', FeedbackCreateView.as_view(), name='feedback-create'),
     path('feedback/list/', FeedbackListView.as_view(), name='feedback-list'),
     path('feedback/<int:pk>/review/', FeedbackReviewView.as_view(), name='feedback-review'),

@@ -1,13 +1,3 @@
-"""
-Document Management Models.
-
-This module handles:
-1. Document - Main document entity
-2. DocumentVersion - Version tracking
-3. DocumentChunk - Text chunks with embeddings
-4. ProcessingStatus - Track async processing state
-"""
-
 from django.db import models
 from django.conf import settings
 from django.core.validators import FileExtensionValidator, MinValueValidator
@@ -16,33 +6,12 @@ import os
 
 
 class DocumentStatus(models.TextChoices):
-    """
-    Document Lifecycle States.
-    
-    DRAFT - Just uploaded, not yet approved for use
-    APPROVED - Ready for querying
-    ARCHIVED - Old version, hidden from search
-    
-    Why this workflow?
-    - Quality control: Only approved docs are searchable
-    - Prevents accidental exposure of draft/incorrect content
-    """
     DRAFT = 'DRAFT', 'Draft'
     APPROVED = 'APPROVED', 'Approved'
     ARCHIVED = 'ARCHIVED', 'Archived'
 
 
 class ProcessingStatus(models.TextChoices):
-    """
-    Document Processing States.
-    
-    Tracks async processing pipeline:
-    UPLOADED -> PROCESSING -> READY (or FAILED)
-    
-    Why separate from DocumentStatus?
-    - DocumentStatus is about approval workflow
-    - ProcessingStatus is about technical processing state
-    """
     UPLOADED = 'UPLOADED', 'Uploaded'
     PROCESSING = 'PROCESSING', 'Processing'
     READY = 'READY', 'Ready'
@@ -50,19 +19,6 @@ class ProcessingStatus(models.TextChoices):
 
 
 class Document(models.Model):
-    """
-    Main Document Entity.
-    
-    Represents a document in the system (PDF, DOCX, TXT).
-    Each document can have multiple versions.
-    
-    Fields explained:
-    - title: Human-readable name
-    - owner: Who uploaded it (for permissions)
-    - status: Draft/Approved/Archived
-    - tags: For categorization and filtering
-    - department: For access control (future feature)
-    """
     
     title = models.CharField(
         max_length=255,
@@ -138,21 +94,6 @@ class Document(models.Model):
 
 
 class DocumentVersion(models.Model):
-    """
-    Document Version Tracking.
-    
-    Why versioning?
-    - Documents get updated over time
-    - Need to track which version answered which query
-    - Can roll back if new version has issues
-    
-    Processing flow:
-    1. User uploads file -> status = UPLOADED
-    2. Celery task extracts text -> status = PROCESSING
-    3. Text chunked and embedded -> status = READY
-    4. If anything fails -> status = FAILED
-    """
-    
     document = models.ForeignKey(
         Document,
         on_delete=models.CASCADE,
@@ -232,22 +173,6 @@ class DocumentVersion(models.Model):
 
 
 class DocumentChunk(models.Model):
-    """
-    Text Chunks with Embeddings.
-    
-    Why chunks?
-    - LLMs have token limits (can't process 100-page docs)
-    - Better retrieval: Find specific relevant sections
-    - Chunk size is a trade-off:
-      * Too small: Lose context
-      * Too large: Less precise retrieval
-    
-    Fields:
-    - chunk_index: Order within the document (0, 1, 2...)
-    - text: The actual text content
-    - embedding: Vector representation for similarity search
-    - metadata: Store page numbers, section headers, etc.
-    """
     
     version = models.ForeignKey(
         DocumentVersion,
@@ -264,14 +189,13 @@ class DocumentChunk(models.Model):
         help_text="Text content of this chunk"
     )
     
-    # Vector embedding for similarity search
-    # Dimension depends on embedding model (e.g., 1536 for OpenAI ada-002)
+    # Vector embedding for similarity 
     embedding = VectorField(
         dimensions=settings.LLM_CONFIG['EMBEDDING_DIMENSION'],
         help_text="Vector embedding for semantic search"
     )
     
-    # Metadata for better attribution
+    # Metadata for attribution
     metadata = models.JSONField(
         default=dict,
         help_text="Additional metadata (page number, section, etc.)"
@@ -284,8 +208,7 @@ class DocumentChunk(models.Model):
         unique_together = ['version', 'chunk_index']
         indexes = [
             models.Index(fields=['version', 'chunk_index']),
-            # Vector index for similarity search (pgvector)
-            # This will be created via migration
+            # Vector index for similarity search
         ]
     
     def __str__(self):
@@ -293,5 +216,4 @@ class DocumentChunk(models.Model):
     
     @property
     def document(self):
-        """Convenience property to access parent document"""
         return self.version.document
