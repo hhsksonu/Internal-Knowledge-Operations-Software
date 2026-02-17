@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 
-// ─── Data ────────────────────────────────────────────────────────────────────
+// Data
 
 const whatIsThis = [
     {
@@ -259,7 +259,7 @@ const faqs = [
     },
 ];
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// Sub-components
 
 const SectionAnchor = ({ id }) => <div id={id} className="-mt-20 pt-20" />;
 
@@ -297,7 +297,7 @@ const FaqItem = ({ q, a }) => {
     );
 };
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// Main Page
 
 const UserGuide = () => {
     const { toggleTheme, isDark } = useTheme();
@@ -321,7 +321,7 @@ const UserGuide = () => {
     return (
         <div className="min-h-screen bg-white dark:bg-dark-bg text-gray-900 dark:text-gray-100">
 
-            {/* ── Sticky Nav ─────────────────────────────────── */}
+            {/* Sticky Nav */}
             <nav className="fixed top-0 w-full z-50 glass border-b border-gray-200 dark:border-dark-border shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
                     {/* Logo */}
@@ -395,7 +395,7 @@ const UserGuide = () => {
                 )}
             </nav>
 
-            {/* ── Hero ───────────────────────────────────────── */}
+            {/* Hero */}
             <section className="pt-28 pb-16 px-4 bg-gradient-to-br from-brand-700 via-brand-600 to-brand-500">
                 <div className="max-w-4xl mx-auto text-center">
                     <div className="inline-flex items-center gap-2 mb-4 px-4 py-1.5 bg-white/10 rounded-full border border-white/20">
@@ -427,7 +427,7 @@ const UserGuide = () => {
                 </div>
             </section>
 
-            {/* ── WHAT IS THIS PLATFORM ──────────────────────── */}
+            {/* WHAT IS THIS PLATFORM */}
             <section className="py-20 px-4">
                 <SectionAnchor id="what-is-this" />
                 <div className="max-w-7xl mx-auto">
@@ -489,7 +489,7 @@ const UserGuide = () => {
                 </div>
             </section>
 
-            {/* ── WHO IS IT FOR ──────────────────────────────── */}
+            {/* WHO IS IT FOR */}
             <section className="py-20 px-4 bg-gray-50 dark:bg-dark-card border-y border-gray-200 dark:border-dark-border">
                 <SectionAnchor id="who-is-it-for" />
                 <div className="max-w-7xl mx-auto">
@@ -539,7 +539,7 @@ const UserGuide = () => {
                 </div>
             </section>
 
-            {/* ── USER GUIDE ─────────────────────────────────── */}
+            {/* USER GUIDE  */}
             <section className="py-20 px-4">
                 <SectionAnchor id="user-guide" />
                 <div className="max-w-5xl mx-auto">
@@ -607,7 +607,7 @@ const UserGuide = () => {
                 </div>
             </section>
 
-            {/* ── FAQ ────────────────────────────────────────── */}
+            {/* FAQ  */}
             <section className="py-20 px-4 bg-gray-50 dark:bg-dark-card border-t border-gray-200 dark:border-dark-border">
                 <SectionAnchor id="faq" />
                 <div className="max-w-3xl mx-auto">
@@ -631,7 +631,7 @@ const UserGuide = () => {
                 </div>
             </section>
 
-            {/* ── CTA ────────────────────────────────────────── */}
+            {/* CTA  */}
             <section className="py-16 px-4 bg-brand-600 dark:bg-brand-800">
                 <div className="max-w-3xl mx-auto text-center">
                     <h2 className="text-3xl font-bold text-white mb-4">Ready to Get Started?</h2>
@@ -657,7 +657,7 @@ const UserGuide = () => {
                 </div>
             </section>
 
-            {/* ── Footer ─────────────────────────────────────── */}
+            {/* Footer */}
             <footer className="bg-gray-900 dark:bg-black text-gray-400 py-8 text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
                     <span className="material-icons text-brand-400 text-xl">hub</span>

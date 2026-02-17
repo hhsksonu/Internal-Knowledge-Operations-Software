@@ -3,8 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
-// InputField MUST be outside Register component
-// If defined inside, it remounts on every keystroke = loses focus
 const InputField = ({ label, name, type = 'text', placeholder, icon, value, onChange }) => (
   <div>
     <label className="label">{label}</label>

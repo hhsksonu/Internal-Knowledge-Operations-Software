@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+// Data 
 
 const stats = [
   { value: '10x', label: 'Faster than manual search', icon: 'rocket_launch' },
@@ -138,7 +138,7 @@ const features = [
   { icon: 'inventory_2', title: 'Offline-First Data', desc: 'Everything runs on your own servers. No external API calls, no third-party data sharing, no compliance risk.' },
 ];
 
-// ─── Components ───────────────────────────────────────────────────────────────
+// Components
 
 const RoleCard = ({ role }) => {
   const colorMap = {
@@ -199,7 +199,7 @@ const RoleCard = ({ role }) => {
   );
 };
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// Main Component 
 
 const HomePage = () => {
   const { toggleTheme, isDark } = useTheme();
@@ -229,7 +229,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-dark-bg text-gray-900 dark:text-white">
 
-      {/* ── NAV ──────────────────────────────────────── */}
+      {/* NAV */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled
         ? 'bg-white/90 dark:bg-dark-bg/90 backdrop-blur-md shadow-sm border-b border-gray-200 dark:border-dark-border'
         : 'bg-transparent'
@@ -241,11 +241,7 @@ const HomePage = () => {
             className="flex items-center gap-2.5 group"
             style={{ textDecoration: 'none' }}
           >
-            {/*
-              Logo icon: fixed gold background — theme-independent.
-              drop-shadow ensures legibility on both white (scrolled light mode)
-              and dark transparent (hero) navbar states.
-            */}
+            {/* Logo icon */}
             <div
               className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 group-hover:brightness-110"
               style={{
@@ -256,10 +252,6 @@ const HomePage = () => {
               <span className="material-icons text-white text-xl" style={{ lineHeight: 1 }}>hub</span>
             </div>
             <div>
-              {/*
-                Logo text: fixed gold — never switches with theme or scroll.
-                A subtle text-shadow provides separation on pure-white scrolled backgrounds.
-              */}
               <p
                 className="text-sm font-bold leading-tight transition-colors duration-200 group-hover:brightness-110"
                 style={{
@@ -334,7 +326,7 @@ const HomePage = () => {
         )}
       </nav>
 
-      {/* ── HERO ─────────────────────────────────────── */}
+      {/* HERO  */}
       <section className="relative min-h-screen flex items-center overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-brand-950 to-slate-900 dark:from-slate-950 dark:via-gray-900 dark:to-slate-950">
@@ -449,7 +441,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ─────────────────────────────── */}
+      {/*  HOW IT WORKS  */}
       <section id="how-it-works" className="py-24 px-4 bg-gray-50 dark:bg-dark-card border-y border-gray-200 dark:border-dark-border">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -486,7 +478,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ── ROLES SECTION ─────────────────────────────── */}
+      {/*  ROLES SECTION  */}
       <section id="roles" className="py-24 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -616,7 +608,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ── FEATURES ─────────────────────────────────── */}
+      {/* FEATURES */}
       <section id="features" className="py-24 px-4 bg-gray-50 dark:bg-dark-card border-t border-gray-200 dark:border-dark-border">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -676,7 +668,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ── FINAL CTA ────────────────────────────────── */}
+      {/* FINAL CTA */}
       <section className="py-24 px-4 bg-gray-950 dark:bg-black">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
@@ -702,14 +694,10 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* ── FOOTER ───────────────────────────────────── */}
+      {/* FOOTER */}
       <footer className="bg-black text-gray-600 py-10 border-t border-gray-900">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            {/*
-              Footer logo: same fixed gold treatment as nav logo.
-              drop-shadow ensures contrast on the black footer background.
-            */}
             <div className="flex items-center gap-2.5">
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center"
