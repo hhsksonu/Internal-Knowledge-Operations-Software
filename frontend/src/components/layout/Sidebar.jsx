@@ -42,9 +42,9 @@ const Sidebar = ({ isOpen, onClose }) => {
         {/* Logo */}
         <div className="flex items-center gap-3 h-16 px-5 border-b border-gray-800">
           <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="material-icons text-white text-lg">library_books</span>
+            <span className="material-icons text-white text-lg">hub</span>
           </div>
-          <span className="text-white font-semibold text-base truncate">Knowledge Platform</span>
+          <span className="text-white font-semibold text-base truncate">KYO BY AI</span>
         </div>
 
         {/* Nav Links */}

@@ -735,7 +735,7 @@ const HomePage = () => {
               <Link to="/login" className="hover:text-white transition-colors">Sign In</Link>
               <Link to="/register" className="hover:text-white transition-colors">Register</Link>
             </div>
-            <p className="text-xs text-gray-700">2024 Know Your Organization. Internal Use Only.</p>
+            <p className="text-xs text-gray-700">2025 Know Your Organization. @HhskSonu.</p>
           </div>
         </div>
       </footer>

@@ -664,7 +664,7 @@ const UserGuide = () => {
                     <span className="text-white font-semibold text-sm">Know Your Organization</span>
                 </div>
                 <p className="text-xs text-gray-600">AI-Powered Internal Knowledge System</p>
-                <p className="text-xs text-gray-700 mt-3">2024 Know Your Organization. Internal Use Only.</p>
+                <p className="text-xs text-gray-700 mt-3">2025 Know Your Organization. @HhskSonu.</p>
             </footer>
 
         </div>

@@ -91,9 +91,9 @@ const Register = () => {
         <div className="flex items-center justify-between mb-10">
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center">
-              <span className="material-icons text-white text-xl">library_books</span>
+              <span className="material-icons text-white text-xl">hub</span>
             </div>
-            <span className="font-bold text-gray-900 dark:text-white text-lg">Knowledge Platform</span>
+            <span className="font-bold text-gray-900 dark:text-white text-lg">Know Your Organization</span>
           </Link>
           <button
             onClick={toggleTheme}
