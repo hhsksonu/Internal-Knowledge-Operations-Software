@@ -188,12 +188,21 @@ const DocumentDetail = () => {
 
           {/* Tags */}
           {doc?.tags && doc.tags.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {doc.tags.map(tag => (
-                <span key={tag} className="px-2.5 py-1 bg-gray-100 dark:bg-dark-hover text-gray-700 dark:text-gray-300 rounded-full text-xs font-medium">
-                  #{tag}
-                </span>
-              ))}
+            <div className="mt-4">
+              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
+                Tags
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {doc.tags.map(tag => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-brand-50 to-blue-50 dark:from-brand-900/30 dark:to-blue-900/30 border border-brand-200 dark:border-brand-700 text-brand-700 dark:text-brand-300 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-all hover:scale-105"
+                  >
+                    <span className="material-icons text-base">local_offer</span>
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
         </div>

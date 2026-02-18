@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import { queryAPI, feedbackAPI } from '../../api/axios';
 import { getErrorMessage, formatDateTime } from '../../utils/helpers';
@@ -142,8 +143,9 @@ const QueryPage = () => {
                   <span className="flex items-center gap-1"><span className="material-icons text-sm">timer</span>{result.response_time_ms}ms</span>
                 </div>
               </div>
-              <div className="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
-                {result.answer}
+
+              <div className="prose prose-sm dark:prose-invert max-w-none text-gray-800 dark:text-gray-200">
+                <ReactMarkdown>{result.answer}</ReactMarkdown>
               </div>
 
               {/* Feedback */}

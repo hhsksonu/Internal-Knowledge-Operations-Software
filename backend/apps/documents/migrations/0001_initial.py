@@ -219,7 +219,7 @@ class Migration(migrations.Migration):
                 (
                     "embedding",
                     pgvector.django.vector.VectorField(
-                        dimensions=1536,
+                        dimensions=768,
                         help_text="Vector embedding for semantic search",
                     ),
                 ),

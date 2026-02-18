@@ -1,6 +1,7 @@
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,7 +38,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # CORS headers
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -170,13 +171,19 @@ CACHES = {
     }
 }
 
-# LLM  
+# Embedding model API key (for BAAI/bge-base-en-v1.5)
+HF_EMBEDDING_API_KEY = config('HF_EMBEDDING_API_KEY', default='')
+
+# LLM generation API key (for mistralai/Mistral-7B-Instruct-v0.2)
+HF_LLM_API_KEY = config('HF_LLM_API_KEY', default='')
+
+# LLM CONFIGURATION HUGGING FACE
 LLM_CONFIG = {
-    'PROVIDER': config('LLM_PROVIDER', default='openai'),
-    'API_KEY': config('LLM_API_KEY', default=''),
-    'MODEL': config('LLM_MODEL', default='gpt-3.5-turbo'),
-    'EMBEDDING_MODEL': config('LLM_EMBEDDING_MODEL', default='text-embedding-3-small'),
-    'EMBEDDING_DIMENSION': config('EMBEDDING_DIMENSION', default=1536, cast=int),
+    'PROVIDER': 'huggingface',  
+    'API_KEY': HF_LLM_API_KEY, 
+    'MODEL': 'mistralai/Mistral-7B-Instruct-v0.2', 
+    'EMBEDDING_MODEL': 'BAAI/bge-base-en-v1.5',
+    'EMBEDDING_DIMENSION': 768, 
 }
 
 # Document Processing Configuration
