@@ -1,168 +1,200 @@
-# Internal Knowledge Operations Platform - Backend
+# Know Your Organization - Backend
 
-A production-ready Django backend for an enterprise knowledge management and RAG (Retrieval-Augmented Generation) system.
+Django REST API backend with RAG (Retrieval-Augmented Generation) capabilities using pgvector and Hugging Face models.
 
-## 🎯 What This Platform Does
+---
 
-This is **NOT** a simple "chat with PDF" demo. This is a **production-grade internal knowledge platform** that companies use to:
+## Tech Stack
 
-- ✅ Upload and manage internal documents (PDF, DOCX, TXT)
-- ✅ Process documents asynchronously with Celery
-- ✅ Search documents using semantic similarity (vector search)
-- ✅ Get AI-powered answers WITH source attribution
-- ✅ Enforce role-based access control
-- ✅ Track costs (token usage) and rate limits
-- ✅ Collect human feedback for quality improvement
-- ✅ Monitor usage with analytics
-- ✅ Maintain audit logs for compliance
+- **Framework:** Django 4.2 + Django REST Framework
+- **Database:** PostgreSQL 14+ with pgvector extension
+- **Cache/Queue:** Redis 7+
+- **Task Queue:** Celery 5.3
+- **WSGI Server:** Gunicorn
+- **Web Server:** Nginx (production)
+- **AI/ML:** Hugging Face Inference API
+  - Embeddings: BAAI/bge-base-en-v1.5 (768-dim)
+  - Generation: Mistral-7B-Instruct-v0.2
 
-## 🏗️ Architecture
+---
+
+## Project Structure
 
 ```
-API Layer (Django REST Framework)
-    ↓
-Service Layer (Business Logic)
-    ↓
-┌─────────────┬──────────────┬────────────────┐
-│   Celery    │  LLM Service │ Vector Storage │
-│   Workers   │  (Abstract)  │   (pgvector)   │
-└─────────────┴──────────────┴────────────────┘
-    ↓
-PostgreSQL Database
+backend/
+├── apps/
+│   ├── core/                   # User model & authentication
+│   │   ├── models.py          # Custom User model with roles
+│   │   ├── permissions.py     # Role-based permissions
+│   │   ├── serializers.py     # JWT & user serializers
+│   │   └── views.py           # Auth endpoints
+│   │
+│   ├── documents/              # Document management
+│   │   ├── models.py          # Document, Version, Chunk models
+│   │   ├── tasks.py           # Celery tasks for processing
+│   │   ├── services.py        # Document processing logic
+│   │   └── views.py           # CRUD endpoints
+│   │
+│   ├── retrieval/              # RAG & vector search
+│   │   ├── services.py        # HF API integration
+│   │   ├── vector_search.py   # pgvector queries
+│   │   ├── views.py           # Query endpoints
+│   │   └── models.py          # Query & Feedback models
+│   │
+│   ├── analytics/              # Usage analytics
+│   │   ├── models.py          # Analytics aggregation
+│   │   └── views.py           # Statistics endpoints
+│   │
+│   └── audit/                  # Audit logging
+│       ├── models.py          # AuditLog model
+│       ├── services.py        # Logging service
+│       └── views.py           # Audit log endpoints
+│
+├── config/
+│   ├── settings.py            # Django configuration
+│   ├── urls.py                # URL routing
+│   ├── wsgi.py                # WSGI configuration
+│   └── celery.py              # Celery configuration
+│
+├── media/                      # Uploaded documents
+├── staticfiles/                # Collected static files
+├── logs/                       # Application logs
+├── requirements.txt            # Python dependencies
+├── .env.example               # Environment variables template
+└── manage.py                  # Django management script
 ```
 
-## 📦 Tech Stack
+---
 
-- **Backend**: Python 3.10+, Django 4.2, Django REST Framework
-- **Database**: PostgreSQL 14+ with pgvector extension
-- **Async Processing**: Celery + Redis
-- **Vector Storage**: pgvector (PostgreSQL extension)
-- **Authentication**: JWT (Simple JWT)
-- **LLM Integration**: Abstracted (supports OpenAI, Anthropic, etc.)
-
-## 🚀 Getting Started
+## Quick Start
 
 ### Prerequisites
 
-1. **Python 3.10+**
-2. **PostgreSQL 14+** with pgvector extension
-3. **Redis** (for Celery)
-4. **LLM API Key** (OpenAI or Anthropic)
+- Python 3.11+
+- PostgreSQL 14+ with pgvector
+- Redis 7+
 
-### Installation Steps
+### Installation
 
-#### 1. Clone and Setup Virtual Environment
-
+**1. Clone and navigate:**
 ```bash
-cd knowledge_platform_backend
+git clone https://github.com/yourusername/know-your-organization.git
+cd know-your-organization/backend
+```
+
+**2. Create virtual environment:**
+```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-#### 2. Install Dependencies
-
+**3. Install dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
 
-#### 3. Setup PostgreSQL with pgvector
-
+**4. Setup PostgreSQL with pgvector:**
 ```bash
-# Install PostgreSQL (if not already installed)
-# On Ubuntu/Debian:
-sudo apt-get install postgresql postgresql-contrib
+# Install PostgreSQL
+sudo apt install postgresql postgresql-contrib
 
-# Install pgvector extension
-sudo apt-get install postgresql-14-pgvector
-
-# Or on macOS with Homebrew:
-brew install postgresql@14
-brew install pgvector
+# Install pgvector
+git clone https://github.com/pgvector/pgvector.git
+cd pgvector
+make
+sudo make install
 
 # Create database
 sudo -u postgres psql
-
 CREATE DATABASE knowledge_platform;
-CREATE USER postgres WITH PASSWORD 'postgres';
-ALTER ROLE postgres SET client_encoding TO 'utf8';
-ALTER ROLE postgres SET default_transaction_isolation TO 'read committed';
-ALTER ROLE postgres SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE knowledge_platform TO postgres;
-
-# Enable pgvector extension
+CREATE USER kyo_user WITH PASSWORD 'your_password';
+GRANT ALL PRIVILEGES ON DATABASE knowledge_platform TO kyo_user;
 \c knowledge_platform
-CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION vector;
 \q
 ```
 
-#### 4. Setup Redis
-
+**5. Configure environment:**
 ```bash
-# On Ubuntu/Debian:
-sudo apt-get install redis-server
-sudo systemctl start redis-server
-
-# On macOS:
-brew install redis
-brew services start redis
-
-# Verify Redis is running:
-redis-cli ping  # Should return PONG
-```
-
-#### 5. Configure Environment Variables
-
-```bash
-# Copy the example env file
 cp .env.example .env
-
-# Edit .env and add your settings:
-# - SECRET_KEY: Django secret key (generate one)
-# - LLM_API_KEY: Your OpenAI/Anthropic API key
-# - Database credentials
-# - Redis URL
+# Edit .env with your credentials
 ```
 
-#### 6. Run Migrations
-
+**6. Run migrations:**
 ```bash
-python manage.py makemigrations
 python manage.py migrate
 ```
 
-#### 7. Create Superuser
-
+**7. Create superuser:**
 ```bash
 python manage.py createsuperuser
-# Follow prompts to create an admin user
 ```
 
-#### 8. Start the Development Server
+**8. Collect static files:**
+```bash
+python manage.py collectstatic --noinput
+```
 
+**9. Start development server:**
 ```bash
 python manage.py runserver
 ```
 
-The API will be available at `http://localhost:8000`
-
-#### 9. Start Celery Worker (in a new terminal)
-
+**10. Start Celery worker (new terminal):**
 ```bash
-# Activate virtual environment
-source venv/bin/activate
-
-# Start Celery worker
-celery -A config worker -l info
+celery -A config worker --loglevel=info
 ```
 
-#### 10. (Optional) Start Celery Beat for Periodic Tasks
+---
+
+## Configuration
+
+### Environment Variables
+
+Create `.env` file:
 
 ```bash
-# In another terminal
-celery -A config beat -l info
+# Django Core
+SECRET_KEY=your-super-secret-key-here
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# Database
+DB_NAME=knowledge_platform
+DB_USER=kyo_user
+DB_PASSWORD=your_secure_password
+DB_HOST=localhost
+DB_PORT=5432
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+
+# Hugging Face API
+HF_EMBEDDING_API_KEY=hf_your_token_here
+HF_LLM_API_KEY=hf_your_token_here
+
+# Document Processing
+MAX_FILE_SIZE_MB=10
+ALLOWED_FILE_TYPES=pdf,docx,txt
+CHUNK_SIZE=500
+CHUNK_OVERLAP=50
+
+# Vector Search
+TOP_K_RESULTS=5
+SIMILARITY_THRESHOLD=0.7
+
+# Rate Limiting
+MAX_QUERIES_PER_DAY=100
+MAX_TOKENS_PER_QUERY=2000
+
+# JWT Tokens
+JWT_ACCESS_TOKEN_LIFETIME_MINUTES=60
+JWT_REFRESH_TOKEN_LIFETIME_DAYS=7
 ```
 
-## 📡 API Endpoints
+---
+
+## API Endpoints
 
 ### Authentication
 
@@ -171,241 +203,329 @@ celery -A config beat -l info
 | POST | `/api/auth/register/` | Register new user |
 | POST | `/api/auth/login/` | Login (get JWT tokens) |
 | POST | `/api/auth/refresh/` | Refresh access token |
-| GET | `/api/auth/profile/` | Get user profile |
-| PUT | `/api/auth/profile/` | Update profile |
+| POST | `/api/auth/logout/` | Logout (blacklist token) |
+| GET | `/api/auth/profile/` | Get current user profile |
+| PUT | `/api/auth/profile/` | Update user profile |
 
-### Document Management
+### Documents
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/documents/upload/` | Upload document |
-| GET | `/api/documents/` | List documents (with filters) |
-| GET | `/api/documents/<id>/` | Get document details |
-| PUT | `/api/documents/<id>/` | Update document |
-| DELETE | `/api/documents/<id>/` | Archive document |
-| POST | `/api/documents/<id>/approve/` | Approve/archive document |
-| POST | `/api/documents/<id>/new-version/` | Upload new version |
-| GET | `/api/documents/versions/<id>/status/` | Check processing status |
+| GET | `/api/documents/` | List all documents |
+| POST | `/api/documents/upload/` | Upload new document |
+| GET | `/api/documents/{id}/` | Get document details |
+| POST | `/api/documents/{id}/approve/` | Approve document |
+| POST | `/api/documents/{id}/archive/` | Archive document |
+| DELETE | `/api/documents/{id}/` | Delete document (admin) |
 
-### Retrieval (RAG)
+### Retrieval
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/retrieval/query/` | Ask a question |
-| GET | `/api/retrieval/queries/` | Get query history |
-| GET | `/api/retrieval/queries/<id>/` | Get query details |
+| GET | `/api/retrieval/history/` | Get query history |
+| GET | `/api/retrieval/history/{id}/` | Get query details |
 | POST | `/api/retrieval/feedback/` | Submit feedback |
-| GET | `/api/retrieval/feedback/list/` | List feedback (reviewers) |
-| POST | `/api/retrieval/feedback/<id>/review/` | Mark as reviewed |
 
 ### Analytics
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/analytics/stats/` | System statistics |
-| GET | `/api/analytics/queries/` | Query analytics |
-| GET | `/api/analytics/me/` | User's analytics |
+| GET | `/api/analytics/overview/` | Platform statistics |
+| GET | `/api/analytics/me/` | User statistics |
+| GET | `/api/analytics/feedback/` | Feedback summary |
 
 ### Audit
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/audit/logs/` | Audit logs (admin only) |
-
-## 🔑 User Roles
-
-1. **ADMIN**: Full system access
-2. **CONTENT_OWNER**: Upload and approve documents
-3. **EMPLOYEE**: Query and provide feedback
-4. **REVIEWER**: Review feedback and quality
-
-## 📝 Example API Usage
-
-### 1. Register and Login
-
-```bash
-# Register
-curl -X POST http://localhost:8000/api/auth/register/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "john_doe",
-    "email": "john@company.com",
-    "password": "SecurePass123!",
-    "password_confirm": "SecurePass123!",
-    "first_name": "John",
-    "last_name": "Doe",
-    "role": "EMPLOYEE"
-  }'
-
-# Login
-curl -X POST http://localhost:8000/api/auth/login/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "john_doe",
-    "password": "SecurePass123!"
-  }'
-
-# Save the access token from response
-```
-
-### 2. Upload a Document
-
-```bash
-curl -X POST http://localhost:8000/api/documents/upload/ \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -F "file=@document.pdf" \
-  -F "title=Company Handbook" \
-  -F "description=Employee handbook 2024" \
-  -F "tags=[\"HR\", \"Policy\"]" \
-  -F "department=HR"
-```
-
-### 3. Check Processing Status
-
-```bash
-curl http://localhost:8000/api/documents/versions/1/status/ \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
-```
-
-### 4. Approve Document (Content Owner)
-
-```bash
-curl -X POST http://localhost:8000/api/documents/1/approve/ \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"action": "approve"}'
-```
-
-### 5. Query (Ask a Question)
-
-```bash
-curl -X POST http://localhost:8000/api/retrieval/query/ \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "question": "What is our remote work policy?",
-    "department": "HR"
-  }'
-```
-
-### 6. Submit Feedback
-
-```bash
-curl -X POST http://localhost:8000/api/retrieval/feedback/ \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query_id": 1,
-    "feedback_type": "HELPFUL",
-    "rating": 5,
-    "comment": "Very helpful answer!"
-  }'
-```
-
-## 🎓 For Freshers: Understanding the Code
-
-### Key Concepts
-
-1. **Models** (`models.py`): Database tables
-   - Define what data we store
-   - Relationships between entities
-
-2. **Serializers** (`serializers.py`): Data validation
-   - Convert JSON ↔ Python objects
-   - Validate incoming data
-
-3. **Views** (`views.py`): Request handlers
-   - Process HTTP requests
-   - Return responses
-
-4. **Services** (`services.py`): Business logic
-   - Document processing
-   - LLM calls
-   - Vector search
-
-5. **Tasks** (`tasks.py`): Async jobs
-   - Background processing
-   - Document chunking
-   - Embedding generation
-
-### Document Lifecycle
-
-```
-1. User uploads → Document created (DRAFT status)
-2. Celery task starts → Processing (UPLOADED → PROCESSING)
-3. Text extraction → Chunking → Embedding generation
-4. Status updated → READY
-5. Content owner approves → Document (APPROVED status)
-6. Now searchable → Available for queries
-```
-
-### Query Flow (RAG)
-
-```
-1. User asks question → /api/retrieval/query/
-2. Generate question embedding → Vector representation
-3. Semantic search → Find similar chunks (cosine similarity)
-4. Build context → Top K chunks
-5. Call LLM → Generate answer with prompt
-6. Save query → Store for analytics
-7. Return answer + sources → User sees attribution
-```
-
-## 🔧 Configuration
-
-Edit `.env` to configure:
-
-- `LLM_PROVIDER`: `openai` or `anthropic`
-- `LLM_MODEL`: Model to use (e.g., `gpt-3.5-turbo`)
-- `CHUNK_SIZE`: Characters per chunk (default: 500)
-- `TOP_K_RESULTS`: Chunks to retrieve (default: 5)
-- `MAX_QUERIES_PER_DAY`: Rate limit per user (default: 100)
-
-## 🐛 Troubleshooting
-
-### Issue: "No module named 'config'"
-**Solution**: Make sure you're in the project root and virtual environment is activated.
-
-### Issue: "relation does not exist"
-**Solution**: Run migrations: `python manage.py migrate`
-
-### Issue: "pgvector extension not found"
-**Solution**: Install pgvector extension in PostgreSQL (see setup steps)
-
-### Issue: "Celery tasks not processing"
-**Solution**: Make sure Celery worker is running and Redis is accessible
-
-### Issue: "LLM API errors"
-**Solution**: Check your API key in `.env` and verify credits/quota
-
-## 📚 Next Steps
-
-1. **Replace Demo Embeddings**: Update `apps/retrieval/services.py` with real OpenAI/Anthropic API calls
-2. **Add Tests**: Write unit tests for critical functions
-3. **Production Deployment**: Use Gunicorn, Nginx, Docker
-4. **Monitoring**: Add Sentry for error tracking
-5. **Scaling**: Consider read replicas, caching strategies
-
-## 🎯 What Makes This Production-Ready?
-
-✅ **Async Processing**: Celery for background tasks
-✅ **Permission System**: Role-based access control
-✅ **Versioning**: Track document changes
-✅ **Source Attribution**: Know where answers come from
-✅ **Feedback Loop**: Quality improvement mechanism
-✅ **Cost Control**: Token tracking, rate limits
-✅ **Audit Logging**: Compliance and security
-✅ **Error Handling**: Graceful failures with retry logic
-✅ **Analytics**: Usage insights
-✅ **Extensible**: Easy to add features
-
-## 📖 Learning Resources
-
-- [Django Documentation](https://docs.djangoproject.com/)
-- [Django REST Framework](https://www.django-rest-framework.org/)
-- [Celery Documentation](https://docs.celeryproject.org/)
-- [pgvector](https://github.com/pgvector/pgvector)
+| GET | `/api/audit/logs/` | Get audit logs (admin) |
 
 ---
 
-**Built with ❤️ for learning and production use**
+## Testing
+
+**Run all tests:**
+```bash
+pytest
+```
+
+**Run with coverage:**
+```bash
+pytest --cov=apps --cov-report=html
+```
+
+**Run specific app tests:**
+```bash
+pytest apps/documents/tests/
+pytest apps/retrieval/tests/
+```
+
+---
+
+## Production Deployment
+
+### AWS EC2 Setup
+
+**1. Launch EC2 Instance:**
+- AMI: Ubuntu 22.04 LTS
+- Instance Type: t2.micro (free tier)
+- Storage: 30GB
+
+**2. Install system dependencies:**
+```bash
+sudo apt update
+sudo apt upgrade -y
+sudo apt install -y python3.11 python3.11-venv python3-pip
+sudo apt install -y postgresql postgresql-contrib redis-server
+sudo apt install -y nginx
+```
+
+**3. Install pgvector:**
+```bash
+sudo apt install -y build-essential git postgresql-server-dev-all
+git clone https://github.com/pgvector/pgvector.git
+cd pgvector
+make
+sudo make install
+```
+
+**4. Setup PostgreSQL:**
+```bash
+sudo -u postgres psql
+CREATE DATABASE knowledge_platform;
+CREATE USER kyo_user WITH PASSWORD 'your_secure_password';
+GRANT ALL PRIVILEGES ON DATABASE knowledge_platform TO kyo_user;
+\c knowledge_platform
+CREATE EXTENSION vector;
+\q
+```
+
+**5. Clone and setup project:**
+```bash
+cd ~
+git clone https://github.com/yourusername/know-your-organization.git backend
+cd backend
+python3.11 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pip install gunicorn
+```
+
+**6. Configure environment:**
+```bash
+nano .env
+# Add production environment variables
+```
+
+**7. Run migrations:**
+```bash
+python manage.py migrate
+python manage.py collectstatic --noinput
+python manage.py createsuperuser
+```
+
+**8. Setup Gunicorn service:**
+```bash
+sudo nano /etc/systemd/system/gunicorn.service
+```
+
+```ini
+[Unit]
+Description=Gunicorn daemon for KYO Backend
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/backend
+Environment="PATH=/home/ubuntu/backend/venv/bin"
+ExecStart=/home/ubuntu/backend/venv/bin/gunicorn \
+          --workers 3 \
+          --bind 127.0.0.1:8000 \
+          --timeout 120 \
+          config.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl start gunicorn
+sudo systemctl enable gunicorn
+```
+
+**9. Setup Celery service:**
+```bash
+sudo nano /etc/systemd/system/celery.service
+```
+
+```ini
+[Unit]
+Description=Celery Worker for KYO Backend
+After=network.target redis.service
+
+[Service]
+Type=forking
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/backend
+Environment="PATH=/home/ubuntu/backend/venv/bin"
+ExecStart=/home/ubuntu/backend/venv/bin/celery -A config worker \
+          --loglevel=info \
+          --logfile=/home/ubuntu/backend/logs/celery.log \
+          --pidfile=/home/ubuntu/backend/celery.pid \
+          --detach
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl start celery
+sudo systemctl enable celery
+```
+
+**10. Configure Nginx:**
+```bash
+sudo nano /etc/nginx/sites-available/kyo
+```
+
+```nginx
+server {
+    listen 80;
+    server_name api.yourdomain.com;
+
+    client_max_body_size 10M;
+
+    location /static/ {
+        alias /home/ubuntu/backend/staticfiles/;
+    }
+
+    location /media/ {
+        alias /home/ubuntu/backend/media/;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+```bash
+sudo ln -s /etc/nginx/sites-available/kyo /etc/nginx/sites-enabled/
+sudo rm /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+**11. Setup SSL (Let's Encrypt):**
+```bash
+sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d api.yourdomain.com
+```
+
+---
+
+## Monitoring & Logs
+
+**View Gunicorn logs:**
+```bash
+sudo journalctl -u gunicorn -f
+```
+
+**View Celery logs:**
+```bash
+tail -f logs/celery.log
+```
+
+**View Nginx logs:**
+```bash
+sudo tail -f /var/log/nginx/error.log
+sudo tail -f /var/log/nginx/access.log
+```
+
+**Django logs:**
+```bash
+tail -f logs/django.log
+```
+
+---
+
+## Security Considerations
+
+- Change `SECRET_KEY` in production
+- Use strong database passwords
+- Enable firewall (ufw)
+- Keep dependencies updated
+- Regular database backups
+- Monitor logs for suspicious activity
+- Use environment variables for secrets
+- Enable HTTPS only in production
+
+---
+
+## Performance Optimization
+
+**Database:**
+- Enable connection pooling
+- Index frequently queried fields
+- Regular VACUUM on PostgreSQL
+
+**Caching:**
+- Redis for session storage
+- Cache frequently accessed queries
+- Use CDN for static files
+
+**Celery:**
+- Limit worker tasks per child
+- Monitor queue length
+- Use task priorities
+
+---
+
+## Troubleshooting
+
+**Gunicorn won't start:**
+```bash
+sudo journalctl -u gunicorn -n 50
+python manage.py check
+```
+
+**Database connection issues:**
+```bash
+python manage.py dbshell
+# If fails, check PostgreSQL service and credentials
+```
+
+**Celery tasks not processing:**
+```bash
+sudo systemctl status celery
+tail -f logs/celery.log
+```
+
+**502 Bad Gateway:**
+```bash
+sudo systemctl status gunicorn nginx
+sudo journalctl -u gunicorn -n 50
+```
+
+---
+
+## License
+
+MIT License - see [LICENSE](../LICENSE) file
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](../CONTRIBUTING.md)
+
+---
+
+**For frontend documentation, see [../frontend/README.md](../frontend/README.md)**
